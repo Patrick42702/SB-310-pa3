@@ -66,3 +66,17 @@ def make_message(msg_type, msg_format, message=None):
         msg_len = len(message)
         return "%s %d %s" % (msg_type, msg_len, message)
     return ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+

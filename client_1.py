@@ -37,6 +37,12 @@ class Client:
         Waits for userinput and then process it
         '''
 
+        # We need to create the JOIN message and packet, then send it to the sorted
+        message = util.make_message("join", 1, self.name)
+        print(message)
+        packet = util.make_packet(msg_type="start", seqno=0, msg=message)
+        print(packet)
+        self.sock.send(b'{packet}')
 
     def receive_handler(self):
         '''
