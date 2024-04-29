@@ -42,14 +42,13 @@ class Client:
         print(message)
         packet = util.make_packet(msg_type="start", seqno=0, msg=message)
         print(packet)
-        self.sock.send(b'{packet}')
+        self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
 
     def receive_handler(self):
         '''
         Waits for a message from server and process it accordingly
         '''
-        raise NotImplementedError # remove it once u start your implementation
-
+        print("ran")
 
 
 # Do not change below part of code

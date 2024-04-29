@@ -25,6 +25,8 @@ class Server:
         continue receiving messages from Clients and processing it.
 
         '''
+        while True:
+            self.sock.recv()
 
 # Do not change below part of code
 
