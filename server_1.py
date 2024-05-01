@@ -26,7 +26,8 @@ class Server:
 
         '''
         while True:
-            self.sock.recv()
+            info, _ = self.sock.recvfrom(1024)
+            print(len(info))
 
 # Do not change below part of code
 

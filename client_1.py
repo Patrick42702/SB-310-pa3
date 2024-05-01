@@ -37,18 +37,24 @@ class Client:
         Waits for userinput and then process it
         '''
 
-        # We need to create the JOIN message and packet, then send it to the sorted
+        # We need to create the JOIN message and packet, then send it to the server
         message = util.make_message("join", 1, self.name)
-        print(message)
         packet = util.make_packet(msg_type="start", seqno=0, msg=message)
-        print(packet)
         self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
 
     def receive_handler(self):
         '''
         Waits for a message from server and process it accordingly
         '''
-        print("ran")
+        msg = self.sock.recvfrom(1024).decode()
+        match msg:
+            case "ERR_SERVER_FULL":
+                print("disconnected: server full")
+            case "ERR_USERNAME_UNAVAILABLE":
+                print("disconnected: username not available")
+            case _:
+                print(f"request_users_list: {self.name}")
+
 
 
 # Do not change below part of code
