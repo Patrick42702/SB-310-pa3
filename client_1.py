@@ -56,7 +56,6 @@ class Client:
                 print(f"request_users_list: {self.name}")
 
 
-
 # Do not change below part of code
 if __name__ == "__main__":
     def helper():
