@@ -25,9 +25,21 @@ class Server:
         continue receiving messages from Clients and processing it.
 
         '''
+        clients = ["hi" for x in range(0,20)]
+
         while True:
-            info, _ = self.sock.recvfrom(1024)
-            print(len(info))
+            raw_packet, address = self.sock.recvfrom(1024)
+            packet = util.parse_packet(raw_packet.decode())
+            msg_type, msg_len, message, checksum = packet
+            print(msg_type, msg_len, message, checksum)
+
+            match msg_type:
+                case "join":
+                    if (message, address) not in clients:
+                        clients.append((message, address))
+                    elif len(clients) > util.MAX_NUM_CLIENTS:
+                        self.sock.sendto(str.encode("ERR_SERVER_FULL"), address)
+
 
 # Do not change below part of code
 

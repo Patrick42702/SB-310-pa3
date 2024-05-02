@@ -54,6 +54,7 @@ class Client:
                 print("disconnected: username not available")
             case _:
                 print(f"request_users_list: {self.name}")
+        return
 
 
 # Do not change below part of code
