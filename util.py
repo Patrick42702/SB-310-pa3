@@ -6,6 +6,17 @@ import binascii
 MAX_NUM_CLIENTS = 10
 TIME_OUT = 0.5 # 500ms
 CHUNK_SIZE = 1400 # 1400 Bytes
+ERR_USERNAME_UNAVAILABLE = "ERR_USERNAME_UNAVAILABLE"
+ERR_SERVER_FULL = "ERR_SERVER_FULL"
+RESPONSE_USERS_LIST = "RESPONSE_USERS_LIST"
+REQUEST_USERS_LIST = "request_users_list"
+LIST = "list"
+JOIN = "join"
+TYPE_1 = 1
+TYPE_2 = 2
+TYPE_3 = 3
+TYPE_4 = 4
+TYPE_5 = 5
 
 def validate_checksum(message):
     '''
@@ -67,10 +78,17 @@ def make_message(msg_type, msg_format, message=None):
         return "%s %d %s" % (msg_type, msg_len, message)
     return ""
 
+def get_input(s=""):
+    return input(s)
 
+# this function takes a socket and requests data, then return a tuple of the packet info
+def get_packet(sock):
+    raw_packet, address = sock.recvfrom(1024)
+    packet_type, msg_len, message, checksum = parse_packet(raw_packet.decode())
+    return packet_type, msg_len, message, checksum, address 
 
-
-
+def parse_message(message):
+    return message.split(" ")
 
 
 

@@ -25,32 +25,42 @@ class Server:
         continue receiving messages from Clients and processing it.
 
         '''
-        clients = [("hi", ("nums")) for x in range(0,10)]
+        clients = []
 
         try:
             while True:
-                raw_packet, address = self.sock.recvfrom(1024)
-                packet = util.parse_packet(raw_packet.decode())
-                packet_type, msg_len, message, checksum = packet
-                # print(packet_type, msg_len, message, checksum)
-                split_message = message.split(" ")
-                msg_type, length = split_message[0], split_message[1]
+                packet_type, msg_len, message, checksum, address = util.get_packet(self.sock)
+                parsed_message = util.parse_message(message)
+                command, length = parsed_message[0], parsed_message[1]
+                users = [x[0] for x in clients]
 
-                match msg_type:
-                    case "join":
-                        username = split_message[2]
-                        users = [x[0] for x in clients]
-                        print(len(clients))
-                        if len(clients) >= util.MAX_NUM_CLIENTS:
-                            self.sock.sendto(str.encode("ERR_SERVER_FULL"), address)
-                        elif username in users:
-                            self.sock.sendto(str.encode("ERR_USERNAME_UNAVAILABLE"), address)
+                match command:
+                    case util.JOIN:
+                        username = parsed_message[2]
+                        message_type = ""
+                        message_format = util.TYPE_2
+                        if len(clients) >= util.MAX_NUM_CLIENTS or username in users:
+                            message_type = util.ERR_SERVER_FULL if len(
+                                clients) >= util.MAX_NUM_CLIENTS else util.ERR_USERNAME_UNAVAILABLE
+                            msg = util.make_message(message_type, message_format)
+                            packet = util.make_packet(msg=msg)
+                            self.sock.sendto(str.encode(packet), address)
                         elif (username, address) not in clients:
                             clients.append((username, address))
                         else:
                             raise Exception("None of the if conditions ran")
+
+                    case util.LIST:
+                        sorted_users = sorted(users)
+                        users_str = " ".join(sorted_users)
+                        message = util.make_message(util.RESPONSE_USERS_LIST, util.TYPE_3, users_str)
+                        packet = util.make_packet(msg=message)
+                        self.sock.sendto(str.encode(packet), address)
+
+
         except Exception as err:
-            print(err)
+            tb = err.__traceback__
+            print(err, tb.tb_lineno) 
 # Do not change below part of code
 
 if __name__ == "__main__":

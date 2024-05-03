@@ -9,7 +9,6 @@ from threading import Thread
 import os
 import util
 
-
 '''
 Write your code inside this class. 
 In the start() function, you will read user-input and act accordingly.
@@ -38,31 +37,45 @@ class Client:
         '''
 
         # We need to create the JOIN message and packet, then send it to the server
-        message = util.make_message("join", 1, self.name)
+        message = util.make_message(util.JOIN, 1, self.name)
         packet = util.make_packet(msg=message)
         self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
-        msg = self.receive_handler()
-        print(msg)
-        # if msg:
-        #     print(msg)
         print(f"join: {self.name}")
+        while True:
+
+            inp = util.get_input()
+            input_args = inp.split(" ")
+            command = input_args[0]
+
+            match command:
+                case util.LIST:
+                    msg = util.make_message(util.LIST, util.TYPE_2)
+                    packet = util.make_packet(msg=msg)
+                    self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
+
 
     def receive_handler(self):
         '''
         Waits for a message from server and process it accordingly
         '''
         while True:
-            resp = self.sock.recvfrom(1024)
-            msg = resp[0].decode()
-            match msg:
-                case "ERR_SERVER_FULL":
+            packet_type, msg_len, message, checksum, address = util.get_packet(self.sock) 
+            parsed_message = util.parse_message(message)
+            command, length = parsed_message[0], parsed_message[1]
+            match command:
+                case util.ERR_SERVER_FULL:
                     print("disconnected: server full")
                     raise SystemExit
-                case "ERR_USERNAME_UNAVAILABLE":
+                case util.ERR_USERNAME_UNAVAILABLE:
                     print("disconnected: username not available")
                     raise SystemExit
+                case util.RESPONSE_USERS_LIST:
+                    users = parsed_message[2:]
+                    f_users = " ".join(users)
+                    print(f"list: {f_users}")
                 case _:
                     pass 
+
 
 
 
@@ -113,4 +126,5 @@ if __name__ == "__main__":
         # Start Client
         S.start()
     except (KeyboardInterrupt, SystemExit):
+        print("exiting")
         sys.exit()
