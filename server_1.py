@@ -25,22 +25,33 @@ class Server:
         continue receiving messages from Clients and processing it.
 
         '''
-        clients = ["hi" for x in range(0,20)]
+        clients = [("user", ("ad", "port")) for x in range(0,25)]
 
-        while True:
-            raw_packet, address = self.sock.recvfrom(1024)
-            packet = util.parse_packet(raw_packet.decode())
-            msg_type, msg_len, message, checksum = packet
-            print(msg_type, msg_len, message, checksum)
+        try:
+            while True:
+                raw_packet, address = self.sock.recvfrom(1024)
+                packet = util.parse_packet(raw_packet.decode())
+                packet_type, msg_len, message, checksum = packet
+                # print(packet_type, msg_len, message, checksum)
+                split_message = message.split(" ")
+                msg_type, length = split_message[0], split_message[1]
 
-            match msg_type:
-                case "join":
-                    if (message, address) not in clients:
-                        clients.append((message, address))
-                    elif len(clients) > util.MAX_NUM_CLIENTS:
-                        self.sock.sendto(str.encode("ERR_SERVER_FULL"), address)
-
-
+                match msg_type:
+                    case "join":
+                        username = split_message[2]
+                        users = [x[0] for x in clients]
+                        print(len(clients))
+                        if len(clients) > util.MAX_NUM_CLIENTS:
+                            print(address)
+                            self.sock.sendto(str.encode("ERR_SERVER_FULL"), address)
+                        elif username in users:
+                            self.sock.sendto(str.encode("ERR_USERNAME_UNAVAILABLE"), address)
+                        elif (username, address) not in clients:
+                            clients.append((username, address))
+                        else:
+                            raise Exception("None of the if conditions ran")
+        except Exception as err:
+            print(err)
 # Do not change below part of code
 
 if __name__ == "__main__":

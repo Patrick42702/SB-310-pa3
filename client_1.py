@@ -39,21 +39,28 @@ class Client:
 
         # We need to create the JOIN message and packet, then send it to the server
         message = util.make_message("join", 1, self.name)
-        packet = util.make_packet(msg_type="start", seqno=0, msg=message)
+        packet = util.make_packet(msg=message)
         self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
+        msg = self.receive_handler()
+        print(msg)
+        # if msg:
+        #     print(msg)
+        print(f"join: {self.name}")
 
     def receive_handler(self):
         '''
         Waits for a message from server and process it accordingly
         '''
-        msg = self.sock.recvfrom(1024).decode()
-        match msg:
-            case "ERR_SERVER_FULL":
-                print("disconnected: server full")
-            case "ERR_USERNAME_UNAVAILABLE":
-                print("disconnected: username not available")
-            case _:
-                print(f"request_users_list: {self.name}")
+        while True:
+            resp = self.sock.recvfrom(1024)
+            msg = resp[0].decode()
+            match msg:
+                case "ERR_SERVER_FULL":
+                    print("disconnected: server full")
+                case "ERR_USERNAME_UNAVAILABLE":
+                    print("disconnected:nusername not available")
+                case _:
+                    pass 
         return
 
 
