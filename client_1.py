@@ -57,11 +57,13 @@ class Client:
             match msg:
                 case "ERR_SERVER_FULL":
                     print("disconnected: server full")
+                    raise SystemExit
                 case "ERR_USERNAME_UNAVAILABLE":
-                    print("disconnected:nusername not available")
+                    print("disconnected: username not available")
+                    raise SystemExit
                 case _:
                     pass 
-        return
+
 
 
 # Do not change below part of code

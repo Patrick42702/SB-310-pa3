@@ -25,7 +25,7 @@ class Server:
         continue receiving messages from Clients and processing it.
 
         '''
-        clients = [("user", ("ad", "port")) for x in range(0,25)]
+        clients = [("hi", ("nums")) for x in range(0,10)]
 
         try:
             while True:
@@ -41,8 +41,7 @@ class Server:
                         username = split_message[2]
                         users = [x[0] for x in clients]
                         print(len(clients))
-                        if len(clients) > util.MAX_NUM_CLIENTS:
-                            print(address)
+                        if len(clients) >= util.MAX_NUM_CLIENTS:
                             self.sock.sendto(str.encode("ERR_SERVER_FULL"), address)
                         elif username in users:
                             self.sock.sendto(str.encode("ERR_USERNAME_UNAVAILABLE"), address)
