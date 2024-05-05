@@ -53,6 +53,15 @@ class Client:
                     packet = util.make_packet(msg=msg)
                     self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
 
+                case util.MSG:
+                    num_users = input_args[1]
+                    users = input_args[2:(2 + num_users)]
+                    text_msg = input_args[-1]
+                    msg = util.make_message(util.MSG, util.TYPE_4, " ".join(str(num_users), users, text_msg))
+                    packet = util.make_packet(msg_type="data", msg=msg)
+                    self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
+
+
 
     def receive_handler(self):
         '''

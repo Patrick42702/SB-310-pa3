@@ -57,6 +57,9 @@ class Server:
                         packet = util.make_packet(msg=message)
                         self.sock.sendto(str.encode(packet), address)
 
+                    case util.SEND_MESSAGE:
+                        pass
+
 
         except Exception as err:
             tb = err.__traceback__

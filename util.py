@@ -12,11 +12,13 @@ RESPONSE_USERS_LIST = "RESPONSE_USERS_LIST"
 REQUEST_USERS_LIST = "request_users_list"
 LIST = "list"
 JOIN = "join"
+MSG = "msg"
 TYPE_1 = 1
 TYPE_2 = 2
 TYPE_3 = 3
 TYPE_4 = 4
 TYPE_5 = 5
+
 
 def validate_checksum(message):
     '''
