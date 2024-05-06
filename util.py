@@ -13,6 +13,7 @@ REQUEST_USERS_LIST = "request_users_list"
 LIST = "list"
 JOIN = "join"
 MSG = "msg"
+DISCONNECT = "disconnect"
 TYPE_1 = 1
 TYPE_2 = 2
 TYPE_3 = 3

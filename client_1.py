@@ -55,10 +55,18 @@ class Client:
 
                 case util.MSG:
                     num_users = input_args[1]
-                    users = input_args[2:(2 + num_users)]
-                    text_msg = input_args[-1]
-                    msg = util.make_message(util.MSG, util.TYPE_4, " ".join(str(num_users), users, text_msg))
+                    users = input_args[2:(2 + int(num_users))]
+                    users = " ".join(users)
+
+                    text_msg = " ".join(input_args[2 + int(num_users):])
+                    final_msg = str(num_users) + " " + users + " " + text_msg
+                    msg = util.make_message(util.MSG, util.TYPE_4, final_msg)
                     packet = util.make_packet(msg_type="data", msg=msg)
+                    self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
+
+                case "quit":
+                    message = util.make_message(util.DISCONNECT, util.TYPE_1, self.name)
+                    packet = util.make_packet(msg_type="data", msg=message)
                     self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
 
 
@@ -82,6 +90,10 @@ class Client:
                     users = parsed_message[2:]
                     f_users = " ".join(users)
                     print(f"list: {f_users}")
+                case util.MSG:
+                    sender = parsed_message[3]
+                    text = " ".join(parsed_message[4:])
+                    print(f"msg: {sender}: {text}")
                 case _:
                     pass 
 

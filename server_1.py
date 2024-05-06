@@ -57,8 +57,35 @@ class Server:
                         packet = util.make_packet(msg=message)
                         self.sock.sendto(str.encode(packet), address)
 
-                    case util.SEND_MESSAGE:
-                        pass
+                    case util.MSG:
+                        # This code stips the number of users for the message, their usernames, and the message itself
+                        user_num = parsed_message[2]
+                        msg_users = parsed_message[3:(3 + int(user_num))]
+                        msg_txt = " ".join(parsed_message[3 + int(user_num):])
+                        sender = list(filter((lambda x: address == x[1]), clients))[0][0]
+
+                        # Print sender username, print non existent if not connected
+                        nonexist_users = list(filter((lambda x: x not in users), msg_users))
+                        print(f"msg: {sender}")
+                        print(parsed_message)
+                        print(msg_txt)
+                        for recv in nonexist_users:
+                            print(f"msg: {sender} to non-existent user {recv}")
+
+                        # create a list of clients to send the message to
+                        exist_users = []
+                        for client in clients:
+                            if client[0] in msg_users:
+                                exist_users.append(client)
+
+                        # begin making forward packet
+                        for usr in exist_users:
+                            text = str(1) + " " + sender + " " + msg_txt
+                            message = util.make_message(util.MSG, util.TYPE_4, text)
+                            packet = util.make_packet(msg=message)
+                            self.sock.sendto(str.encode(packet), usr[1])
+
+                    case util.DISCONNECT:
 
 
         except Exception as err:
