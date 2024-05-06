@@ -40,7 +40,7 @@ class Client:
         message = util.make_message(util.JOIN, 1, self.name)
         packet = util.make_packet(msg=message)
         self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
-        print(f"join: {self.name}")
+
         while True:
 
             inp = util.get_input()
@@ -68,13 +68,12 @@ class Client:
                     message = util.make_message(util.DISCONNECT, util.TYPE_1, self.name)
                     packet = util.make_packet(msg_type="data", msg=message)
                     self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
-
-
+                    raise SystemExit
 
     def receive_handler(self):
         '''
-        Waits for a message from server and process it accordingly
-        '''
+            Waits for a message from server and process it accordingly
+            '''
         while True:
             packet_type, msg_len, message, checksum, address = util.get_packet(self.sock) 
             parsed_message = util.parse_message(message)

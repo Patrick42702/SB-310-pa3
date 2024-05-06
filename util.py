@@ -14,6 +14,7 @@ LIST = "list"
 JOIN = "join"
 MSG = "msg"
 DISCONNECT = "disconnect"
+ERR_UNKNOWN_MSG = "ERR_UNKNOWN_MESSAGE"
 TYPE_1 = 1
 TYPE_2 = 2
 TYPE_3 = 3

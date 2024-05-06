@@ -47,6 +47,7 @@ class Server:
                             self.sock.sendto(str.encode(packet), address)
                         elif (username, address) not in clients:
                             clients.append((username, address))
+                            print(f"join: {username}")
                         else:
                             raise Exception("None of the if conditions ran")
 
@@ -66,9 +67,6 @@ class Server:
 
                         # Print sender username, print non existent if not connected
                         nonexist_users = list(filter((lambda x: x not in users), msg_users))
-                        print(f"msg: {sender}")
-                        print(parsed_message)
-                        print(msg_txt)
                         for recv in nonexist_users:
                             print(f"msg: {sender} to non-existent user {recv}")
 
@@ -86,18 +84,28 @@ class Server:
                             self.sock.sendto(str.encode(packet), usr[1])
 
                     case util.DISCONNECT:
+                        user = parsed_message[2]
+                        clients.remove((user, address))
+                        print(f"disconnected: {user}")
+
+                    case _:
+                        msg = util.make_message(util.ERR_UNKNOWN_MSG, util.TYPE_2)
+                        clients.remove((user, address))
+                        print(f"disconnected: {user} sent unknown command")
+
+
 
 
         except Exception as err:
             tb = err.__traceback__
             print(err, tb.tb_lineno) 
-# Do not change below part of code
+    # Do not change below part of code
 
 if __name__ == "__main__":
     def helper():
         '''
-        This function is just for the sake of our module completion
-        '''
+    This function is just for the sake of our module completion
+    '''
         print("Server")
         print("-p PORT | --port=PORT The server port, defaults to 15000")
         print("-a ADDRESS | --address=ADDRESS The server ip or hostname, defaults to localhost")

@@ -1,0 +1,4 @@
+join: client2
+join: client1
+disconnected: client2
+disconnected: client1
