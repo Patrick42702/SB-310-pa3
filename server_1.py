@@ -52,10 +52,12 @@ class Server:
                             raise Exception("None of the if conditions ran")
 
                     case util.LIST:
+                        sender = list(filter((lambda x: address == x[1]), clients))[0][0]
                         sorted_users = sorted(users)
                         users_str = " ".join(sorted_users)
                         message = util.make_message(util.RESPONSE_USERS_LIST, util.TYPE_3, users_str)
                         packet = util.make_packet(msg=message)
+                        print(f"request_users_list: {sender}")
                         self.sock.sendto(str.encode(packet), address)
 
                     case util.MSG:
@@ -66,6 +68,7 @@ class Server:
                         sender = list(filter((lambda x: address == x[1]), clients))[0][0]
 
                         # Print sender username, print non existent if not connected
+                        print(f"msg: {sender}")
                         nonexist_users = list(filter((lambda x: x not in users), msg_users))
                         for recv in nonexist_users:
                             print(f"msg: {sender} to non-existent user {recv}")
