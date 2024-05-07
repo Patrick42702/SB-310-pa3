@@ -36,7 +36,7 @@ class BasicTest(object):
                 self.forwarder.senders[client].stdin.write(inpt.encode())
                 self.forwarder.senders[client].stdin.flush()
                 self.last_time = time.time()
-        
+
         elif time.time() - self.last_time > 0.5:
             for client in self.forwarder.senders.keys():
                 self.forwarder.senders[client].stdin.write("quit\n".encode())
@@ -45,16 +45,16 @@ class BasicTest(object):
         return
 
     def result(self):
-        
+
         num_of_packets = 0
         # Check if Output File Exists
         if not os.path.exists("server_out"):
             raise ValueError("No such file server_out")
-        
+
         for client in self.client_stdin.keys():
-            if not os.path.exists("client_"+client):
+            if not os.path.exists("client_" +client):
                 raise ValueError("No such file %s"% "client_" + client)
-        
+
         server_out = []
         clients_out = {}
 
@@ -64,7 +64,7 @@ class BasicTest(object):
             clients_out[client] = ["quitting"]
             server_out.append('disconnected: %s' % client)
             num_of_packets += 1
-        
+
         # Checking Output of Client Messages
         for inp in self.input_to_check:
             client,message = inp
@@ -77,27 +77,31 @@ class BasicTest(object):
                 server_out.append("msg: %s" % client)
                 num_of_packets += 1
                 for i in range(int(msg[1])):
-                    clients_out[msg[i + 2]].append("msg: %s: %s" % (client, " ".join(msg[2 + int(msg[1]):])) )
+                    clients_out[msg[i + 2]].append("msg: %s: %s" % (client, " ".join(msg[2 + int(msg[1]):])))
                     num_of_packets += 1
-        
-        
+
+
         # Checking Clients Output
         for client in clients_out.keys():
-            with open("client_"+client) as f:
+            with open("client_" +client) as f:
                 lines = list(map(lambda x: x.lower(), f.read().split('\n')))
+                print(str(lines) + " this is lines")
+                print(str(clients_out[client]) + " this is clients_out[client]")
                 for each_line in clients_out[client]:
                     if each_line.lower() not in lines:
                         print("Test Failed: Client output is not correct")
                         return False
-        
+
         # Checking Sever Output in File
         with open("server_out") as f:
             lines = list(map(lambda x: x.lower(), f.read().split('\n')))
+            print(str(server_out) + " this is server_out")
+            print(str(lines) + " this is lines from server")
             for each_line in server_out:
                 if each_line.lower() not in lines:
                     print("Test Failed: Server Output is not correct")
                     return False
-        
+
         print("Test Passed")
         return True
 

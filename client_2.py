@@ -80,7 +80,6 @@ class Client:
                     message = util.make_message(util.DISCONNECT, util.TYPE_1, self.name)
                     packet = util.make_packet(msg_type="data", msg=message)
                     self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
-                    print("quitting")
                     raise SystemExit
 
     def receive_handler(self):

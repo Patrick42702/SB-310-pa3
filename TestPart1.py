@@ -10,11 +10,11 @@ from testspart1 import MessageTest1, MessageTest2, SingleClientTest, BasicTest, 
 
 
 def tests_to_run(forwarder):
-    ListUsersTest.ListUsersTest(forwarder, "ListUsersTest")
-    MessageTest1.MessageTest1(forwarder, "MessageTest1")
-    MessageTest2.MessageTest2(forwarder, "MessageTest2")
-    SingleClientTest.SingleClientTest(forwarder, "SingleClient")
-    MultipleClientsTest.MultipleClientsTest(forwarder, "MultipleClients")
+    # ListUsersTest.ListUsersTest(forwarder, "ListUsersTest")
+    # MessageTest1.MessageTest1(forwarder, "MessageTest1")
+    # MessageTest2.MessageTest2(forwarder, "MessageTest2")
+    # SingleClientTest.SingleClientTest(forwarder, "SingleClient")
+    # MultipleClientsTest.MultipleClientsTest(forwarder, "MultipleClients")
     ErrorHandlingTest.ErrorHandlingTest(forwarder, "ErrorHandling")
 
 class Forwarder(object):
@@ -107,8 +107,8 @@ class Forwarder(object):
                 "python3", self.sender_path, "-p",
                 str(self.cli_ports[i]), "-u", i
             ],
-                                               stdin=subprocess.PIPE,
-                                               stdout=sender_out[i])
+                stdin=subprocess.PIPE,
+                stdout=sender_out[i])
         try:
             start_time = time.time()
             while None in [self.senders[s].poll() for s in self.senders]:

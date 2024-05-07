@@ -6,6 +6,8 @@ import binascii
 MAX_NUM_CLIENTS = 10
 TIME_OUT = 0.5 # 500ms
 CHUNK_SIZE = 1400 # 1400 Bytes
+
+# I store all of the constants I use here
 ERR_USERNAME_UNAVAILABLE = "ERR_USERNAME_UNAVAILABLE"
 ERR_SERVER_FULL = "ERR_SERVER_FULL"
 RESPONSE_USERS_LIST = "RESPONSE_USERS_LIST"
@@ -87,7 +89,7 @@ def get_input(s=""):
 
 # this function takes a socket and requests data, then return a tuple of the packet info
 def get_packet(sock):
-    raw_packet, address = sock.recvfrom(1024)
+    raw_packet, address = sock.recvfrom(CHUNK_SIZE)
     packet_type, msg_len, message, checksum = parse_packet(raw_packet.decode())
     return packet_type, msg_len, message, checksum, address 
 
