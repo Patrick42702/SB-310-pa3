@@ -85,8 +85,6 @@ class BasicTest(object):
         for client in clients_out.keys():
             with open("client_" +client) as f:
                 lines = list(map(lambda x: x.lower(), f.read().split('\n')))
-                print(str(lines) + " this is lines")
-                print(str(clients_out[client]) + " this is clients_out[client]")
                 for each_line in clients_out[client]:
                     if each_line.lower() not in lines:
                         print("Test Failed: Client output is not correct")
@@ -95,8 +93,6 @@ class BasicTest(object):
         # Checking Sever Output in File
         with open("server_out") as f:
             lines = list(map(lambda x: x.lower(), f.read().split('\n')))
-            print(str(server_out) + " this is server_out")
-            print(str(lines) + " this is lines from server")
             for each_line in server_out:
                 if each_line.lower() not in lines:
                     print("Test Failed: Server Output is not correct")

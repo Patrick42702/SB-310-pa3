@@ -83,6 +83,10 @@ class Client:
                     print("quitting")
                     raise SystemExit
 
+                case _:
+                    # this is an incorrect msg, must output message as Client
+                    print("incorrect userinput format")
+
     def receive_handler(self):
         '''
             Waits for a message from server and process it accordingly

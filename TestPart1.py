@@ -10,11 +10,11 @@ from testspart1 import MessageTest1, MessageTest2, SingleClientTest, BasicTest, 
 
 
 def tests_to_run(forwarder):
-    # ListUsersTest.ListUsersTest(forwarder, "ListUsersTest")
-    # MessageTest1.MessageTest1(forwarder, "MessageTest1")
-    # MessageTest2.MessageTest2(forwarder, "MessageTest2")
-    # SingleClientTest.SingleClientTest(forwarder, "SingleClient")
-    # MultipleClientsTest.MultipleClientsTest(forwarder, "MultipleClients")
+    ListUsersTest.ListUsersTest(forwarder, "ListUsersTest")
+    MessageTest1.MessageTest1(forwarder, "MessageTest1")
+    MessageTest2.MessageTest2(forwarder, "MessageTest2")
+    SingleClientTest.SingleClientTest(forwarder, "SingleClient")
+    MultipleClientsTest.MultipleClientsTest(forwarder, "MultipleClients")
     ErrorHandlingTest.ErrorHandlingTest(forwarder, "ErrorHandling")
 
 class Forwarder(object):
