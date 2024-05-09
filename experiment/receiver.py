@@ -1,5 +1,6 @@
 import socket
 import util
+import time
 
 
 address = "127.0.0.1"
@@ -12,6 +13,6 @@ sock.bind((address, port))
 
 if __name__ == "__main__":
     receiver = util.Receiver(sock)
-    print(receiver.sock)
     receiver.receive_message()
+    time.sleep(1)
     print(receiver.final_msg)

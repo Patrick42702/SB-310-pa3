@@ -10,7 +10,7 @@ if __name__ == "__main__":
     sock.settimeout(None)
     sock.bind(('', random.randint(10000, 40000)))
     name = "client 1"
-    message = "join: patrick"
+    message = "msg: client1 hello! How are you?" + ("IM good" * 300)
     sender = util.Sender(message, sock, (server_addr, server_port))
     sender.send_message()
 
