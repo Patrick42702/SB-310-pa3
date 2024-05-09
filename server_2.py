@@ -5,6 +5,8 @@ import sys
 import getopt
 import socket
 import util
+from queue import Queue
+from threading import Thread
 
 
 class Server:
@@ -19,6 +21,15 @@ class Server:
         self.sock.settimeout(None)
         self.sock.bind((self.server_addr, self.server_port))
 
+    def handle_packet(self, queue):
+        #initalize vars
+        seq_no = -1
+        while True:
+            packet = queue.get()
+            if 
+
+        pass
+
     def start(self):
         '''
         Main loop.
@@ -28,14 +39,33 @@ class Server:
         # Store the connected clients in this list, in form (("name"), (address, port))
         clients = []
 
+        # We will store 2 dictionaries, one for keeping track of threads when needing to terminate
+        # and create them and associating them with the client's ip address their associated with.AssertionError
+        # the second will be mapping the client's ip address to their packet queue, so that the threads can 
+        # be blocked from running until a packet thats meant for it arrives on the correct queue. 
+        # when a thread receives an END packet, it will terminate the thread after receiving an acknowledgement
+        # that the receiver received that its ending the connection. 
+
+        threads = {}
+        queues = {}
+
         # Begin try block, catch all errors in the except block
         try:
             while True:
-                # Use function get_packet in util that takes socket, and unpacks 
-                # a packet into all of the following vaules. Then we'll parse the message
-                # into arguments by " ", and rearrange the message together if needed
-                packet_type, msg_len, message, checksum, address = util.get_packet(self.sock)
-                parsed_message = util.parse_message(message)
+                rec_packet = util.get_packet(self.sock)
+                if rec_packet == util.RETRANSMIT:
+                    raise Exception(util.RETRANSMIT)
+
+                # Implement threading logic here so that we pass the packet to the correct thread
+                if rec_packet[0] == util.START:
+                    # we need to create a thread for this IP
+                    queues[rec_packet[4]] = Queue()
+                    threads[rec_packet[4]] = Thread(target=self.handle_packet(queues[rec_packet[4]]))
+                    queues[rec_packet[4]].put(rec_packet)
+
+
+
+                parsed_message = util.parse_message(payload)
                 command, length = parsed_message[0], parsed_message[1]
 
                 # Use list comprehension to pull the users out of the tuples into its own list
@@ -131,6 +161,8 @@ class Server:
 
 
         except Exception as err:
+            if err.args[0] == util.RETRANSMIT:
+                print("checksum was incorrect: dropping packet")
             tb = err.__traceback__
             print(err, tb.tb_lineno) 
     # Do not change below part of code
