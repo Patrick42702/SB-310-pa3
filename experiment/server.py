@@ -11,5 +11,4 @@ sock.bind((address, port))
 
 while True:
     data, address = sock.recvfrom(1000)
-    time.sleep(1)
     print(str(data.decode()))

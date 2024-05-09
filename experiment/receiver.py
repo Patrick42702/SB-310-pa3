@@ -2,7 +2,7 @@ import socket
 import util
 
 
-address = "localhost"
+address = "127.0.0.1"
 port = 15000
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -12,8 +12,6 @@ sock.bind((address, port))
 
 if __name__ == "__main__":
     receiver = util.Receiver(sock)
-    while True:
-        if len(receiver.final_msg) > 0:
-            break
-        receiver.receive_message()
+    print(receiver.sock)
+    receiver.receive_message()
     print(receiver.final_msg)

@@ -5,7 +5,7 @@ import random
 
 if __name__ == "__main__":
     server_port = 15000
-    server_addr = "localhost"
+    server_addr = "127.0.0.1"
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(None)
     sock.bind(('', random.randint(10000, 40000)))
