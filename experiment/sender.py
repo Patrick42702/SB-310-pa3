@@ -1,0 +1,16 @@
+import util
+import socket
+import random
+
+
+if __name__ == "__main__":
+    server_port = 15000
+    server_addr = "localhost"
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(None)
+    sock.bind(('', random.randint(10000, 40000)))
+    name = "client 1"
+    message = "join: patrick"
+    sender = util.Sender(message, sock, (server_addr, server_port))
+    sender.send_message()
+

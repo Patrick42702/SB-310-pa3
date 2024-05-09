@@ -1,8 +1,9 @@
+
 '''
 This file contains basic utility functions that you can use and can also make your helper functions here
 '''
 import binascii
-import socket
+from socket import socket
 import time
 import random
 import logging
@@ -97,33 +98,33 @@ def get_input(s=""):
     return input(s)
 
 
-# this function takes a sock and requests data, then return a tuple of the packet info
+# this function takes a socket and requests data, then return a tuple of the packet info
 def get_packet(sock):
     raw_packet, address = sock.recvfrom(CHUNK_SIZE)
     if not validate_checksum(raw_packet):
         return '', address
     return raw_packet, address
 
-def send_ack(sock, destination, seqno):
+def send_ack(socket, destination, seqno):
     ack_packet = make_packet(ACK, seqno=seqno +1)
-    sock.sendto(str.encode(ack_packet), destination)
+    socket.sendto(str.encode(ack_packet), destination)
     return
 
-# this function takes in a sock, destination, message
+# this function takes in a socket, destination, message
 # It it supposed to transmit this message over to the receiver using our 
 # basic tcp like protocol. 
 
 class Sender():
-    def __init__(self, message, sock, dest):
+    def __init__(self, message, socket, dest):
         self.message = message
-        self.sock = sock
+        self.socket = socket
         self.dest = dest
         self.start_seq = random.randint(0, 50000)
         self.current_seq = self.start_seq
         self.packets = []
 
     def transmit(self, packet):
-        self.sock.sendto(packet.encode(), self.dest)
+        self.socket.sendto(packet.encode(), self.dest)
 
     def chunkify(self):
         packets = []
@@ -160,7 +161,7 @@ class Sender():
                 self.transmit(current_packet)
                 init_time = time.time()
             else:
-                data, address = get_packet(self.sock)
+                data, address = get_packet(self.socket)
                 # if we received a packet with data, we got an ack. make sure its the right one.
                 if data:
                     msg_type, seqno, data, checksum = parse_packet(data)
@@ -181,38 +182,37 @@ class Sender():
                         return
                     else:
                         print("we aint supposed to hit this")
-# this function takes a sock, and receives a message. Upon receiving a start message,
+# this function takes a socket, and receives a message. Upon receiving a start message,
 # it should then buffer all subsequent messages and ACK when needed. Upon receiving an 
 # end packet, it should parse all of the buffered messages together and return the message 
 # intended for the receiver
 
 class Receiver():
-    def __init__(self, sock):
+    def __init__(self, socket):
         self.msg_buffer = {}
         self.final_msg = ""
-        self.sock = sock
 
     # this is our receiver message function. it will continually run for a connection instance.ConnectionError
     # upon receiving a start, clear the buffers. Upon receiving data packets, buffer them in the message buffer.BufferError
     # upon receiving an end packet, parse the message from the message buffer in the correct order and store it in final 
     # message. Then the receiver can pull the message from that field.
-    def receive_message(self):
+    def receive_message(self, socket:socket):
         while True:
-            data, address = get_packet(self.sock)
+            data, address = get_packet(socket)
             if data:
                 msg_type, seqno, data, checksum = parse_packet(data)
                 if msg_type == START:
                     self.msg_buffer = {}
                     self.final_msg = ""
-                    send_ack(self.sock, address, seqno)
+                    send_ack(socket, address, seqno)
                 elif msg_type == DATA:
                     self.msg_buffer[seqno] = data
-                    send_ack(self.sock, address, seqno)
+                    send_ack(socket, address, seqno)
                 elif msg_type == END:
                     sort_keys = sorted(self.msg_buffer.keys())
                     for key in sort_keys:
                         self.final_msg += self.msg_buffer[key]
-                    send_ack(self.sock, address, seqno)
+                    send_ack(socket, address, seqno)
 
 
 
