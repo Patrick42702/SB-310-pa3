@@ -215,6 +215,8 @@ class Receiver():
         while True:
             try:
                 data, address = get_packet(self.sock)
+                print(data)
+
                 if data:
                     msg_type, seqno, data, checksum = parse_packet(data)
                     seqno = int(seqno)
@@ -231,7 +233,6 @@ class Receiver():
                         sort_keys = sorted(self.msg_buffer.keys())
                         for key in sort_keys:
                             self.final_msg += self.msg_buffer[key]
-                        print(self.final_msg + "\n" + "this is the final message from the client")
                         send_ack(self.sock, address, seqno)
 
             except socket.timeout:
