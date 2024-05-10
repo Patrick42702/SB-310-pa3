@@ -34,7 +34,8 @@ class Server:
                 # Use function get_packet in util that takes socket, and unpacks 
                 # a packet into all of the following vaules. Then we'll parse the message
                 # into arguments by " ", and rearrange the message together if needed
-                packet_type, msg_len, message, checksum, address = util.get_packet(self.sock)
+                raw_packet, address= util.get_packet(self.sock)
+                packet_type, msg_len, message, checksum = util.parse_packet(raw_packet)
                 parsed_message = util.parse_message(message)
                 command, length = parsed_message[0], parsed_message[1]
 

@@ -93,7 +93,8 @@ class Client:
             '''
         while True:
             # Unpack the received packet using get_packet
-            packet_type, msg_len, message, checksum, address = util.get_packet(self.sock) 
+            raw_packet, address= util.get_packet(self.sock)
+            packet_type, msg_len, message, checksum = util.parse_packet(raw_packet)
             parsed_message = util.parse_message(message)
             command, length = parsed_message[0], parsed_message[1]
             # match the packet command and treat it as necessary

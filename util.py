@@ -217,6 +217,7 @@ class Receiver():
     def receive_message(self):
         while True:
             data, address = self.receiver_queue.get()
+            print(data)
             if data:
                 msg_type, seqno, data, checksum = parse_packet(data)
                 if msg_type == START:
@@ -231,8 +232,7 @@ class Receiver():
                     for key in sort_keys:
                         self.final_msg += self.msg_buffer[key]
                         self.rec_address = address
-                        self.event.set()
-                    self.msgs_rec += 1
+                    self.event.set()
                     send_ack(self.sock, address, seqno)
 
     def get_msg(self):

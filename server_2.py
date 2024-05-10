@@ -46,8 +46,9 @@ class Server:
             while True:
 
                 event.wait()
-                parsed_message = receiver.get_msg()
-                address = receiver.rec_address()
+                message = receiver.get_msg()
+                parsed_message = util.parse_message(message)
+                address = receiver.get_address()
                 command, length = parsed_message[0], parsed_message[1]
 
                 # Use list comprehension to pull the users out of the tuples into its own list
@@ -140,7 +141,7 @@ class Server:
                     # Unknown packet received
                     case _:
                         msg = util.make_message(util.ERR_UNKNOWN_MSG, util.TYPE_2)
-                        sender = util.Sender(msg, self.sock, address)
+                        sender = util.Sender(msg, self.sock, address, self.packager.sender)
                         sender.send_message()
                         clients.remove((user, address))
                         print(f"disconnected: {user} sent unknown command")
