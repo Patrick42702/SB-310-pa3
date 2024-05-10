@@ -5,6 +5,7 @@ import sys
 import getopt
 import socket
 import random
+import threading
 from threading import Thread
 import os
 import util
@@ -27,6 +28,7 @@ class Client:
         self.sock.settimeout(None)
         self.sock.bind(('', random.randint(10000, 40000)))
         self.name = username
+        self.packager = util.Packager(self.sock)
 
     def start(self):
         '''
@@ -35,12 +37,17 @@ class Client:
         Use make_message() and make_util() functions from util.py to make your first join packet
         Waits for userinput and then process it
         '''
+        # create packager class so that we can process the packets coming 
+        # over the socket and give them to the correct thread
+        pack_thr = Thread(target=self.packager.package)
+        pack_thr.daemon = True
+        pack_thr.start()
 
         # We need to create the JOIN message and packet, then send it to the server
         message = util.make_message(util.JOIN, 1, self.name)
-        join = util.Sender(sock=self.sock, dest=(self.server_addr, self.server_port), message=message)
-        print(self.sock.getsockname())
-        # join.send_message()
+        join = util.Sender(sock=self.sock, dest=(self.server_addr, self.server_port), 
+                           message=message, sender_queue=self.packager.sender)
+        join.send_message()
 
         # Begin client loop
         while True:
@@ -57,7 +64,8 @@ class Client:
                 case util.LIST:
                     #send packet to the server asking for the user list packet
                     msg = util.make_message(util.LIST, util.TYPE_2)
-                    lst = util.Sender(msg, self.sock, (self.server_addr, self.server_port))
+                    lst = util.Sender(sock=self.sock, dest=(self.server_addr, self.server_port),
+                                      message=msg, sender_queue=self.packager.sender)
                     lst.send_message()
 
                 # user inputted a msg
@@ -72,14 +80,16 @@ class Client:
                     text_msg = " ".join(input_args[2 + int(num_users):])
                     final_msg = str(num_users) + " " + users + " " + text_msg
                     msg = util.make_message(util.MSG, util.TYPE_4, final_msg)
-                    msger = util.Sender(msg, self.sock, (self.server_addr, self.server_port))
+                    msger = util.Sender(sock=self.sock, dest=(self.server_addr, self.server_port),
+                                        message=msg, sender_queue=self.packager.sender)
                     msger.send_message()
 
                 # user inputted quit
                 case "quit":
                     # send disconnect packet and exit the system
-                    message = util.make_message(util.DISCONNECT, util.TYPE_1, self.name)
-                    qt = util.Sender(message, self.sock, (self.server_addr, self.server_port))
+                    msg = util.make_message(util.DISCONNECT, util.TYPE_1, self.name)
+                    qt = util.Sender(sock=self.sock, dest=(self.server_addr, self.server_port),
+                                     message=msg, sender_queue=self.packager.sender)
                     qt.send_message()
                     raise SystemExit
 
@@ -87,35 +97,44 @@ class Client:
         '''
             Waits for a message from server and process it accordingly
             '''
-        receiver = util.Receiver(self.sock)
+        receiver = util.Receiver(self.sock, self.packager.receiver)
         event = receiver.event
         rec_thr = Thread(target=receiver.receive_message)
         rec_thr.daemon = True
         rec_thr.start()
+
         while True:
             # Unpack the received packet using get_packet
-            print("main thread running")
+            cur_name = threading.current_thread().name
+            print(f"the main thread name is {cur_name}")
             event.wait()
-            parsed_message = ""
+            parsed_message = receiver.get_msg()
             command, length = parsed_message[0], parsed_message[1]
             # match the packet command and treat it as necessary
             match command:
+
                 case util.ERR_SERVER_FULL:
                     print("disconnected: server full")
                     raise SystemExit
+
                 case util.ERR_USERNAME_UNAVAILABLE:
                     print("disconnected: username not available")
                     raise SystemExit
+
                 case util.RESPONSE_USERS_LIST:
                     users = parsed_message[2:]
                     f_users = " ".join(users)
                     print(f"list: {f_users}")
+
                 case util.MSG:
                     sender = parsed_message[3]
                     text = " ".join(parsed_message[4:])
                     print(f"msg: {sender}: {text}")
+
                 case _:
                     pass 
+
+            print("event clearing")
             event.clear()
 
 

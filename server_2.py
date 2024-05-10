@@ -20,6 +20,7 @@ class Server:
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.settimeout(None)
         self.sock.bind((self.server_addr, self.server_port))
+        self.packager = util.Packager(self.sock)
 
 
     def start(self):
@@ -31,33 +32,22 @@ class Server:
         # Store the connected clients in this list, in form (("name"), (address, port))
         clients = []
 
-        # We will store 2 dictionaries, one for keeping track of threads when needing to terminate
-        # and create them and associating them with the client's ip address their associated with.AssertionError
-        # the second will be mapping the client's ip address to their packet queue, so that the threads can 
-        # be blocked from running until a packet thats meant for it arrives on the correct queue. 
-        # when a thread receives an END packet, it will terminate the thread after receiving an acknowledgement
-        # that the receiver received that its ending the connection. 
-
-        threads = {}
-        queues = {}
-
         # Begin try block, catch all errors in the except block
         try:
+            pack_thr = Thread(target=self.packager.package)
+            pack_thr.daemon = True
+            pack_thr.start()
+
+            receiver = util.Receiver(self.sock, self.packager.receiver)
+            event = receiver.event
+            rec_thr = Thread(target=receiver.receive_message)
+            rec_thr.daemon = True
+            rec_thr.start()
             while True:
-                rec_packet = util.get_packet(self.sock)
-                if rec_packet == util.RETRANSMIT:
-                    raise Exception(util.RETRANSMIT)
 
-                # Implement threading logic here so that we pass the packet to the correct thread
-                if rec_packet[0] == util.START:
-                    # we need to create a thread for this IP
-                    queues[rec_packet[4]] = Queue()
-                    threads[rec_packet[4]] = Thread(target=self.handle_packet(queues[rec_packet[4]]))
-                    queues[rec_packet[4]].put(rec_packet)
-
-
-
-                parsed_message = util.parse_message(payload)
+                event.wait()
+                parsed_message = receiver.get_msg()
+                address = receiver.rec_address()
                 command, length = parsed_message[0], parsed_message[1]
 
                 # Use list comprehension to pull the users out of the tuples into its own list
@@ -68,6 +58,7 @@ class Server:
 
                     # packet is a JOIN packet
                     case util.JOIN:
+
                         # If serverfull or username taken, respond to the client
                         # with the necessary error, else let the client connect and
                         # add them to the list of connected clients. Anything else
@@ -79,16 +70,19 @@ class Server:
                             message_type = util.ERR_SERVER_FULL if len(
                                 clients) >= util.MAX_NUM_CLIENTS else util.ERR_USERNAME_UNAVAILABLE
                             msg = util.make_message(message_type, message_format)
-                            packet = util.make_packet(msg=msg)
-                            self.sock.sendto(str.encode(packet), address)
+                            sender = util.Sender(msg, self.sock, address, self.packager.sender)
+                            sender.send_message()
+
                         elif (username, address) not in clients:
                             clients.append((username, address))
                             print(f"join: {username}")
+
                         else:
                             raise Exception("None of the if conditions ran")
 
                     # Packet is a request_user_list packet
                     case util.LIST:
+
                         # Here we filter the sender's name out of the client array
                         # by using the address the sender sent the packet with. sort 
                         # the list of users lexographically, join them into a string
@@ -98,12 +92,13 @@ class Server:
                         sorted_users = sorted(users)
                         users_str = " ".join(sorted_users)
                         message = util.make_message(util.RESPONSE_USERS_LIST, util.TYPE_3, users_str)
-                        packet = util.make_packet(msg=message)
                         print(f"request_users_list: {sender}")
-                        self.sock.sendto(str.encode(packet), address)
+                        send = util.Sender(message, self.sock, address, self.packager.sender)
+                        send.send_message()
 
                     # Packet is a msg packet
                     case util.MSG:
+
                         # This code stips the number of users for the message, their usernames,
                         # and the message itself. Also filters out the sender's username using
                         # their address
@@ -132,8 +127,8 @@ class Server:
                         for usr in exist_users:
                             text = str(1) + " " + sender + " " + msg_txt
                             message = util.make_message(util.MSG, util.TYPE_4, text)
-                            packet = util.make_packet(msg=message)
-                            self.sock.sendto(str.encode(packet), usr[1])
+                            sender = util.Sender(message, self.sock, address, self.packager.sender)
+                            sender.send_message()
 
                     # Packet is a disconnect packet
                     case util.DISCONNECT:
@@ -145,16 +140,17 @@ class Server:
                     # Unknown packet received
                     case _:
                         msg = util.make_message(util.ERR_UNKNOWN_MSG, util.TYPE_2)
-                        packet = util.make_packet(message=msg)
+                        sender = util.Sender(msg, self.sock, address)
+                        sender.send_message()
                         clients.remove((user, address))
                         print(f"disconnected: {user} sent unknown command")
 
 
+                print("event clearing")
+                event.clear()
 
 
         except Exception as err:
-            if err.args[0] == util.RETRANSMIT:
-                print("checksum was incorrect: dropping packet")
             tb = err.__traceback__
             print(err, tb.tb_lineno) 
     # Do not change below part of code
