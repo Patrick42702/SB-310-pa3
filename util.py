@@ -127,6 +127,7 @@ class Sender():
         self.sender_queue = sender_queue
 
     def transmit(self, packet):
+        print(f"transmitting packet: {packet}")
         self.sock.sendto(packet.encode(), self.dest)
 
     def chunkify(self):
@@ -253,10 +254,8 @@ class Packager():
                 if packet:
                     msg_type, seqno, data, checksum = parse_packet(packet)
                     if msg_type == ACK:
-                        print(f"putting this data packet on the queue: {packet}")
                         self.sender.put((packet, address))
                     else:
-                        print(f"putting this data packet on the queue: {packet}")
                         self.receiver.put((packet, address))
             except socket.timeout:
                 pass
