@@ -6,6 +6,7 @@ import socket
 import time
 import random
 import logging
+import threading
 
 MAX_NUM_CLIENTS = 10
 TIME_OUT = 0.5 # 500ms
@@ -191,6 +192,7 @@ class Receiver():
         self.msg_buffer = {}
         self.final_msg = ""
         self.sock = sock
+        self.event = threading.Event()
 
     # this is our receiver message function. it will continually run for a connection instance.ConnectionError
     # upon receiving a start, clear the buffers. Upon receiving data packets, buffer them in the message buffer.BufferError
@@ -198,6 +200,7 @@ class Receiver():
     # message. Then the receiver can pull the message from that field.
     def receive_message(self):
         while True:
+            print("rec message running")
             data, address = get_packet(self.sock)
             if data:
                 msg_type, seqno, data, checksum = parse_packet(data)
@@ -212,7 +215,12 @@ class Receiver():
                     sort_keys = sorted(self.msg_buffer.keys())
                     for key in sort_keys:
                         self.final_msg += self.msg_buffer[key]
+                        self.event.set()
+                    self.msgs_rec += 1
                     send_ack(self.sock, address, seqno)
+
+    def get_msg(self):
+        return self.final_msg
 
 
 

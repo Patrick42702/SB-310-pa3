@@ -21,14 +21,6 @@ class Server:
         self.sock.settimeout(None)
         self.sock.bind((self.server_addr, self.server_port))
 
-    def handle_packet(self, queue):
-        #initalize vars
-        seq_no = -1
-        while True:
-            packet = queue.get()
-            if 
-
-        pass
 
     def start(self):
         '''

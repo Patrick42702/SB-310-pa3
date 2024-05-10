@@ -38,7 +38,9 @@ class Client:
 
         # We need to create the JOIN message and packet, then send it to the server
         message = util.make_message(util.JOIN, 1, self.name)
-        util.Sender(sock=self.sock, dest=(self.server_addr, self.server_port), message=message)
+        join = util.Sender(sock=self.sock, dest=(self.server_addr, self.server_port), message=message)
+        print(self.sock.getsockname())
+        # join.send_message()
 
         # Begin client loop
         while True:
@@ -55,8 +57,8 @@ class Client:
                 case util.LIST:
                     #send packet to the server asking for the user list packet
                     msg = util.make_message(util.LIST, util.TYPE_2)
-                    packet = util.make_packet(msg=msg)
-                    self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
+                    lst = util.Sender(msg, self.sock, (self.server_addr, self.server_port))
+                    lst.send_message()
 
                 # user inputted a msg
                 case util.MSG:
@@ -70,25 +72,31 @@ class Client:
                     text_msg = " ".join(input_args[2 + int(num_users):])
                     final_msg = str(num_users) + " " + users + " " + text_msg
                     msg = util.make_message(util.MSG, util.TYPE_4, final_msg)
-                    packet = util.make_packet(msg_type="data", msg=msg)
-                    self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
+                    msger = util.Sender(msg, self.sock, (self.server_addr, self.server_port))
+                    msger.send_message()
 
                 # user inputted quit
                 case "quit":
                     # send disconnect packet and exit the system
                     message = util.make_message(util.DISCONNECT, util.TYPE_1, self.name)
-                    packet = util.make_packet(msg_type="data", msg=message)
-                    self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
+                    qt = util.Sender(message, self.sock, (self.server_addr, self.server_port))
+                    qt.send_message()
                     raise SystemExit
 
     def receive_handler(self):
         '''
             Waits for a message from server and process it accordingly
             '''
+        receiver = util.Receiver(self.sock)
+        event = receiver.event
+        rec_thr = Thread(target=receiver.receive_message)
+        rec_thr.daemon = True
+        rec_thr.start()
         while True:
             # Unpack the received packet using get_packet
-            packet_type, seq_no, payload, checksum, address = util.get_packet(self.sock) 
-            parsed_message = util.parse_message(payload)
+            print("main thread running")
+            event.wait()
+            parsed_message = ""
             command, length = parsed_message[0], parsed_message[1]
             # match the packet command and treat it as necessary
             match command:
@@ -107,8 +115,8 @@ class Client:
                     text = " ".join(parsed_message[4:])
                     print(f"msg: {sender}: {text}")
                 case _:
-
                     pass 
+            event.clear()
 
 
 
