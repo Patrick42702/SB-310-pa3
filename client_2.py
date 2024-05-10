@@ -38,8 +38,7 @@ class Client:
 
         # We need to create the JOIN message and packet, then send it to the server
         message = util.make_message(util.JOIN, 1, self.name)
-        packet = util.make_packet(msg=message)
-        self.sock.sendto(packet.encode(), (self.server_addr, self.server_port))
+        util.Sender(sock=self.sock, dest=(self.server_addr, self.server_port), message=message)
 
         # Begin client loop
         while True:
